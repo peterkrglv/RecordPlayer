@@ -6,7 +6,8 @@ data class SongModel(
     val name: String,
     val artist: String,
     val music: Int,
-    val cover: Int
+    val cover: Int,
+    val album: String = ""
 )
 
 fun getPlayList(): List<SongModel> {
