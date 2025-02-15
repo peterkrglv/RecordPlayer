@@ -21,12 +21,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
-import com.example.recordplayer.R
+import coil.compose.rememberImagePainter
 import com.example.recordplayer.domain.SongModel
 import com.example.recordplayer.ui.icons.Pause
 import com.example.recordplayer.ui.icons.Play
@@ -34,7 +33,6 @@ import com.example.recordplayer.ui.icons.SkipNext
 import com.example.recordplayer.ui.icons.SkipPrevious
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
-
 
 @Composable
 fun PlayerView(
@@ -67,12 +65,9 @@ fun MainState(
     val currentSongN = remember { mutableStateOf(player.currentMediaItemIndex) }
     val currentSong = songs.value[currentSongN.value]
 
-    val packageName = "com.example.recordplayer"
     LaunchedEffect(Unit) {
         songs.value.forEach {
-            val path = "android.resource://" + packageName + "/" + it.music
-            val mediaItem = MediaItem.fromUri(Uri.parse(path))
-            player.addMediaItem(mediaItem)
+            player.addMediaItem(it.media)
         }
         player.prepare()
     }
@@ -108,7 +103,7 @@ fun MainState(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
-            painter = painterResource(id = songs.value[currentSongN.value].cover),
+            painter = rememberImagePainter(currentSong.coverPath),
             contentDescription = "Cover",
             modifier = Modifier
                 .fillMaxWidth()
@@ -193,33 +188,11 @@ fun MainState(
             }
         }
     }
-
-
 }
 
 @Preview(showSystemUi = true)
 @Composable
 fun PlayerPreview() {
-    val context = LocalContext.current
-    val player = remember { ExoPlayer.Builder(context).build() }
-    val songs = listOf(
-        SongModel(
-            name = "Master Of Puppets",
-            artist = "Metallica",
-            cover = R.drawable.record_player,
-            music = R.raw.never
-        )
-    )
-    val state = PlayerState.Main(
-        player = player,
-        songs = songs,
-        currentSongN = 0,
-        isPlaying = false,
-        currentPosition = 0,
-        sliderPosition = 0f,
-        totalDuration = 0
-    )
-    MainState(state = state)
 }
 
 fun formatTime(timeMs: Long): String {
