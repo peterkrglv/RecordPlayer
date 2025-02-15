@@ -26,7 +26,8 @@ class PlayerViewModel(
             totalDuration = 0
         )
     )
-    val viewState: StateFlow<PlayerState> = _viewState
+    val viewState: StateFlow<PlayerState>
+        get() = _viewState
 
     init {
         initializePlayer()
