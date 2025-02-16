@@ -1,6 +1,7 @@
 package com.example.recordplayer.ui.player
 
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
@@ -54,10 +55,9 @@ class PlayerViewModel(
         })
         val songs = (_viewState.value as? PlayerState.Main)?.songs ?: return
         songs.forEach {
-            val path = "android.resource://com.example.recordplayer/" + it.music
-            val mediaItem = MediaItem.fromUri(Uri.parse(path))
-            player.addMediaItem(mediaItem)
+            player.addMediaItem(it.media)
         }
+        Log.d("Playyy", "initializePlayer: ${songs.size}")
         player.prepare()
     }
 
