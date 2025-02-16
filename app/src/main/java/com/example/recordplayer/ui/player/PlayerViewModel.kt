@@ -1,5 +1,6 @@
 package com.example.recordplayer.ui.player
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
@@ -10,6 +11,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+
 
 class PlayerViewModel(
     private val player: ExoPlayer
@@ -31,6 +33,7 @@ class PlayerViewModel(
 
     init {
         initializePlayer()
+        observePlayerState()
     }
 
     private fun initializePlayer() {
@@ -49,18 +52,65 @@ class PlayerViewModel(
                 ) ?: PlayerState.Loading
             }
         })
+        val songs = (_viewState.value as? PlayerState.Main)?.songs ?: return
+        songs.forEach {
+            val path = "android.resource://com.example.recordplayer/" + it.music
+            val mediaItem = MediaItem.fromUri(Uri.parse(path))
+            player.addMediaItem(mediaItem)
+        }
+        player.prepare()
     }
 
-    fun updateCurrentPosition() {
+    private fun observePlayerState() {
         viewModelScope.launch {
             while (true) {
-                if (player.isPlaying) {
-                    _viewState.value = (_viewState.value as? PlayerState.Main)?.copy(
-                        currentPosition = player.currentPosition
-                    ) ?: PlayerState.Loading
-                }
-                delay(1000)
+                delay(500)
+                _viewState.value = (_viewState.value as? PlayerState.Main)?.copy(
+                    currentPosition = player.currentPosition,
+                    isPlaying = player.isPlaying,
+                    sliderPosition = if (player.duration > 0) player.currentPosition.toFloat() / player.duration.toFloat() else 0f
+                ) ?: PlayerState.Loading
             }
         }
+    }
+
+    fun obtainEvent(event: PlayerEvent) {
+        when (event) {
+            is PlayerEvent.LoadData -> loadData()
+            is PlayerEvent.PlayPause -> playPause()
+            is PlayerEvent.SkipNext -> skipNext()
+            is PlayerEvent.SkipPrevious -> skipPrevious()
+        }
+    }
+
+    private fun skipPrevious() {
+        player.seekToPrevious()
+        _viewState.value = (_viewState.value as PlayerState.Main).copy(
+            currentSongN = player.currentMediaItemIndex
+        )
+    }
+
+    private fun skipNext() {
+        player.seekToNext()
+        _viewState.value = (_viewState.value as PlayerState.Main).copy(
+            currentSongN = player.currentMediaItemIndex
+        )
+    }
+
+    private fun playPause() {
+        if (_viewState.value !is PlayerState.Main) return
+        val isPlaying = (_viewState.value as PlayerState.Main).isPlaying
+        if (isPlaying) {
+            player.pause()
+        } else {
+            player.play()
+        }
+        _viewState.value = (_viewState.value as PlayerState.Main).copy(
+            isPlaying = !(isPlaying)
+        )
+    }
+
+    private fun loadData() {
+        // Реализация загрузки данных
     }
 }
