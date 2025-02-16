@@ -3,6 +3,7 @@ package com.example.recordplayer.domain
 import androidx.media3.exoplayer.ExoPlayer
 import com.example.recordplayer.data.ApiSongRepositoryImpl
 import com.example.recordplayer.data.LocalSongRepositoryImpl
+import com.example.recordplayer.ui.NotificationService
 import com.example.recordplayer.ui.api_songs.ApiSongsViewModel
 import com.example.recordplayer.ui.local_songs.LocalSongsViewModel
 import com.example.recordplayer.ui.player.PlayerViewModel
@@ -31,5 +32,6 @@ val appModule = module {
     single<ExoPlayer> { ExoPlayer.Builder(get()).build() }
     viewModel<LocalSongsViewModel> { LocalSongsViewModel(get()) }
     viewModel<ApiSongsViewModel> { ApiSongsViewModel(get(), get()) }
-    single<PlayerViewModel> { PlayerViewModel(get()) }
+    single<PlayerViewModel> { PlayerViewModel(get(), get()) }
+    single { NotificationService() }
 }

@@ -1,23 +1,27 @@
 package com.example.recordplayer.ui.player
 
+import android.app.Application
+import android.content.Intent
 import android.util.Log
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
+import com.example.recordplayer.domain.SongModel
 import com.example.recordplayer.domain.getPlayListTest
+import com.example.recordplayer.ui.NotificationService
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import com.example.recordplayer.domain.SongModel
-
+import java.io.ByteArrayOutputStream
+import android.graphics.Bitmap
 
 class PlayerViewModel(
-    private val player: ExoPlayer
-) : ViewModel() {
-
+    private val player: ExoPlayer,
+    application: Application
+) : AndroidViewModel(application) {
     private val _viewState = MutableStateFlow<PlayerState>(
         PlayerState.Main(
             player = player,
@@ -35,7 +39,9 @@ class PlayerViewModel(
     init {
         initializePlayer()
         observePlayerState()
-        Log.d("Playyy", "PlayerViewModel: ${(_viewState.value as PlayerState.Main).songs.size}")
+        sendNotification(
+            song = (_viewState.value as PlayerState.Main).songs[0]
+        )
     }
 
     private fun initializePlayer() {
@@ -66,12 +72,14 @@ class PlayerViewModel(
         viewModelScope.launch {
             while (true) {
                 delay(500)
-                _viewState.value = (_viewState.value as? PlayerState.Main)?.copy(
+                val currentState = _viewState.value as? PlayerState.Main ?: return@launch
+                _viewState.value = currentState.copy(
                     currentPosition = player.currentPosition,
                     isPlaying = player.isPlaying,
                     sliderPosition = if (player.duration > 0) player.currentPosition.toFloat() / player.duration.toFloat() else 0f,
                     currentSongN = player.currentMediaItemIndex
-                ) ?: PlayerState.Loading
+                )
+                sendNotification(currentState.songs[currentState.currentSongN])
             }
         }
     }
@@ -140,6 +148,20 @@ class PlayerViewModel(
     }
 
     private fun loadData() {
-        // Реализация загрузки данных
+    }
+
+    fun sendNotification(song: SongModel) {
+        val intent = Intent(getApplication(), NotificationService::class.java).apply {
+            putExtra("title", song.name)
+            putExtra("artist", song.artist)
+            putExtra("coverUrl", song.coverUrl)
+            song.bitmap?.let {
+                val stream = ByteArrayOutputStream()
+                it.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                val byteArray = stream.toByteArray()
+                putExtra("bitmap", byteArray)
+            }
+        }
+        getApplication<Application>().startService(intent)
     }
 }
