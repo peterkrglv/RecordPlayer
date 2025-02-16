@@ -3,8 +3,6 @@ package com.example.recordplayer.domain
 class GetApiSongsUseCase(private val apiSongRepository: ApiSongRepository) {
     suspend fun execute(): List<SongModel> {
         val songs = apiSongRepository.getExampleSongs()
-        return songs.map{
-            SongModel(it)
-        }
+        return songs.map{ SongModel(it) }
     }
 }

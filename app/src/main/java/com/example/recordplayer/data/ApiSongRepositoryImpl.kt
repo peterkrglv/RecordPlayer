@@ -30,19 +30,21 @@ class ApiSongRepositoryImpl : ApiSongRepository {
         val url = URL("https://api.deezer.com/search?q=$searchQuery")
         val response = url.readText()
         val json = JSONObject(response)
-        val tracks = json.getJSONArray("data")
         val songs = mutableListOf<ApiSong>()
 
-        for (i in 0 until tracks.length()) {
-            val track = tracks.getJSONObject(i)
-            val song = ApiSong(
-                name = track.getString("title"),
-                artist = track.getJSONObject("artist").getString("name"),
-                album = track.getJSONObject("album").getString("title"),
-                media = URL(track.getString("preview")),
-                cover = URL(track.getJSONObject("album").getString("cover"))
-            )
-            songs.add(song)
+        if (json.has("data")) {
+            val tracks = json.getJSONArray("data")
+            for (i in 0 until tracks.length()) {
+                val track = tracks.getJSONObject(i)
+                val song = ApiSong(
+                    name = track.getString("title"),
+                    artist = track.getJSONObject("artist").getString("name"),
+                    album = track.getJSONObject("album").getString("title"),
+                    media = URL(track.getString("preview")),
+                    cover = URL(track.getJSONObject("album").getString("cover"))
+                )
+                songs.add(song)
+            }
         }
         return songs
     }

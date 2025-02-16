@@ -24,11 +24,12 @@ val dataModule = module {
 val domainModule = module {
     factory<GetLocalSongsUseCase> { GetLocalSongsUseCase(get()) }
     factory<GetApiSongsUseCase> { GetApiSongsUseCase(get()) }
+    factory<SearchApiSongsUseCase> { SearchApiSongsUseCase(get()) }
 }
 
 val appModule = module {
     single<ExoPlayer> { ExoPlayer.Builder(get()).build() }
     viewModel<LocalSongsViewModel> { LocalSongsViewModel(get()) }
-    viewModel<ApiSongsViewModel> { ApiSongsViewModel(get()) }
+    viewModel<ApiSongsViewModel> { ApiSongsViewModel(get(), get()) }
     single<PlayerViewModel> { PlayerViewModel(get()) }
 }
