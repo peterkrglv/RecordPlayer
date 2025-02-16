@@ -35,7 +35,6 @@ import com.example.recordplayer.ui.icons.SkipPrevious
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 
-
 @Composable
 fun PlayerView(
     viewModel: PlayerViewModel = koinViewModel()
@@ -44,61 +43,40 @@ fun PlayerView(
     when (val state = viewState.value) {
         is PlayerState.Main -> {
             MainState(
-                state = state
+                state = state,
+                onPlayButtonClicked = {
+                    viewModel.obtainEvent(PlayerEvent.PlayPause)
+                },
+                onPreviousButtonClicked = {
+                    viewModel.obtainEvent(PlayerEvent.SkipPrevious)
+                },
+                onNextButtonClicked = {
+                    viewModel.obtainEvent(PlayerEvent.SkipNext)
+                }
             )
         }
 
         is PlayerState.Loading -> {
-
+            // Отображение состояния загрузки
         }
     }
 }
 
 @Composable
 fun MainState(
-    state: PlayerState.Main
+    state: PlayerState.Main,
+    onPlayButtonClicked: () -> Unit,
+    onPreviousButtonClicked: () -> Unit,
+    onNextButtonClicked: () -> Unit,
 ) {
     val player = state.player
-    val songs = remember { mutableStateOf(state.songs) }
-    val currentPosition = remember { mutableStateOf(state.currentPosition) }
-    val sliderPosition = remember { mutableStateOf(state.sliderPosition) }
-    val totalDuration = remember { mutableStateOf(state.totalDuration) }
-    val isPlaying = remember { mutableStateOf(state.isPlaying) }
-    val currentSongN = remember { mutableStateOf(player.currentMediaItemIndex) }
-    val currentSong = songs.value[currentSongN.value]
-
-    val packageName = "com.example.recordplayer"
-    LaunchedEffect(Unit) {
-        songs.value.forEach {
-            val path = "android.resource://" + packageName + "/" + it.music
-            val mediaItem = MediaItem.fromUri(Uri.parse(path))
-            player.addMediaItem(mediaItem)
-        }
-        player.prepare()
-    }
-
-    LaunchedEffect(key1 = player.currentPosition, key2 = player.isPlaying) {
-        delay(500)
-        currentPosition.value = player.currentPosition
-    }
-
-    LaunchedEffect(currentPosition.value) {
-        if (totalDuration.value > 0) {
-            sliderPosition.value = currentPosition.value.toFloat() / totalDuration.value.toFloat()
-        }
-    }
-
-    LaunchedEffect(player.duration) {
-        if (player.duration > 0) {
-            totalDuration.value = player.duration
-        }
-    }
-
-    LaunchedEffect(isPlaying.value) {
-        if (isPlaying.value && totalDuration.value > 0) {
-            sliderPosition.value = currentPosition.value.toFloat() / totalDuration.value.toFloat()
-        }
-    }
+    val songs = state.songs
+    val currentPosition = state.currentPosition
+    val sliderPosition = state.sliderPosition
+    val totalDuration = state.totalDuration
+    val isPlaying = state.isPlaying
+    val currentSongN = state.currentSongN
+    val currentSong = songs[currentSongN]
 
     Column(
         modifier = Modifier
@@ -108,7 +86,7 @@ fun MainState(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
-            painter = painterResource(id = songs.value[currentSongN.value].cover),
+            painter = painterResource(id = songs[currentSongN].cover),
             contentDescription = "Cover",
             modifier = Modifier
                 .fillMaxWidth()
@@ -122,10 +100,9 @@ fun MainState(
             text = currentSong.artist
         )
         Slider(
-            value = sliderPosition.value,
+            value = sliderPosition,
             onValueChange = { newPosition ->
-                sliderPosition.value = newPosition
-                player.seekTo((newPosition * totalDuration.value).toLong())
+                player.seekTo((newPosition * totalDuration).toLong())
             },
             valueRange = 0f..1f,
             modifier = Modifier.padding(horizontal = 8.dp)
@@ -137,10 +114,10 @@ fun MainState(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = formatTime(currentPosition.value)
+                text = formatTime(currentPosition)
             )
             Text(
-                text = formatTime(totalDuration.value)
+                text = formatTime(totalDuration)
             )
         }
         if (currentSong.album.isNotEmpty()) {
@@ -156,8 +133,7 @@ fun MainState(
         ) {
             IconButton(
                 onClick = {
-                    player.seekToPrevious()
-                    currentSongN.value = player.currentMediaItemIndex
+                    onPreviousButtonClicked()
                 }
             ) {
                 Icon(
@@ -167,24 +143,16 @@ fun MainState(
             }
             IconButton(
                 onClick = {
-                    if (player.isPlaying) {
-                        player.pause()
-                    } else {
-                        player.play()
-                    }
-                    isPlaying.value = player.isPlaying
+                    onPlayButtonClicked()
                 }
             ) {
                 Icon(
-                    imageVector = if (isPlaying.value) Pause else Play,
+                    imageVector = if (isPlaying) Pause else Play,
                     contentDescription = "Play/Pause"
                 )
             }
             IconButton(
-                onClick = {
-                    player.seekToNext()
-                    currentSongN.value = player.currentMediaItemIndex
-                }
+                onClick = onNextButtonClicked
             ) {
                 Icon(
                     imageVector = SkipNext,
@@ -193,8 +161,6 @@ fun MainState(
             }
         }
     }
-
-
 }
 
 @Preview(showSystemUi = true)
@@ -219,7 +185,11 @@ fun PlayerPreview() {
         sliderPosition = 0f,
         totalDuration = 0
     )
-    MainState(state = state)
+    MainState(state = state,
+        onPlayButtonClicked = {},
+        onPreviousButtonClicked = {},
+        onNextButtonClicked = {}
+    )
 }
 
 fun formatTime(timeMs: Long): String {
