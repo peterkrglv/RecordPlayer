@@ -2,10 +2,9 @@ package com.example.recordplayer.domain
 
 class SearchApiSongsUseCase(
     private val apiSongRepository: ApiSongRepository,
-    private val searchQuery: String
 ) {
-    suspend fun execute(): List<SongModel> {
+    suspend fun execute(searchQuery: String): List<SongModel> {
         val songs = apiSongRepository.searchSongs(searchQuery)
-        return emptyList()
+        return songs.map{ SongModel(it) }
     }
 }

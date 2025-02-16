@@ -1,8 +1,10 @@
 package com.example.recordplayer.ui.api_songs
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.recordplayer.domain.GetApiSongsUseCase
+import com.example.recordplayer.domain.SearchApiSongsUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -11,7 +13,8 @@ import kotlinx.coroutines.withContext
 import java.lang.Thread.sleep
 
 class ApiSongsViewModel(
-    private val getApiSongsUseCase: GetApiSongsUseCase
+    private val getApiSongsUseCase: GetApiSongsUseCase,
+    private val searchApiSongsUseCase: SearchApiSongsUseCase
 ) : ViewModel() {
     private val _viewState = MutableStateFlow<ApiSongsState>(
         ApiSongsState.Loading
@@ -22,6 +25,18 @@ class ApiSongsViewModel(
     fun obtainEvent(event: ApiSongsEvent) {
         when (event) {
             is ApiSongsEvent.LoadData -> loadData()
+            is ApiSongsEvent.Search -> search(event.query)
+        }
+    }
+
+    private fun search(query: String) {
+        Log.d("pizda", "search: $query")
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                val songs = searchApiSongsUseCase.execute(query)
+                Log.d("pizda", "songs: $songs")
+                _viewState.value = ApiSongsState.Main(songs, query)
+            }
         }
     }
 

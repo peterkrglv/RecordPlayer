@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -29,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberImagePainter
@@ -62,6 +64,9 @@ fun ApiSongsView(
                 },
                 onSongClick = { songs, currentSongN ->
                     playerViewModel.obtainEvent(PlayerEvent.changePlaylist(songs, currentSongN))
+                },
+                onQueryChanged = { query ->
+                    viewModel.obtainEvent(ApiSongsEvent.Search(query))
                 }
             )
     }
@@ -72,12 +77,14 @@ fun MainState(
     state: ApiSongsState.Main,
     playerState: PlayerState,
     onPlayButtonClicked: () -> Unit = {},
-    onSongClick: (songs: List<SongModel>, currentSongN: Int) -> Unit
+    onSongClick: (songs: List<SongModel>, currentSongN: Int) -> Unit,
+    onQueryChanged: (String) -> Unit
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         ApiSongs(
             state = state,
-            onSongClick = onSongClick
+            onSongClick = onSongClick,
+            onQueryChanged = onQueryChanged
         )
         if (playerState is PlayerState.Main)
             MiniPlayer(
@@ -90,19 +97,11 @@ fun MainState(
 @Composable
 fun ApiSongs(
     state: ApiSongsState.Main,
-    onSongClick: (songs: List<SongModel>, currentSongN: Int) -> Unit
+    onSongClick: (songs: List<SongModel>, currentSongN: Int) -> Unit,
+    onQueryChanged: (String) -> Unit
 ) {
     val searchQuery = remember { mutableStateOf(state.searchQuery) }
-    val songs = remember(searchQuery.value) {
-        if (searchQuery.value.isEmpty()) {
-            state.songs
-        } else {
-            state.songs.filter {
-                it.name.contains(searchQuery.value, ignoreCase = true) ||
-                        it.artist.contains(searchQuery.value, ignoreCase = true)
-            }
-        }
-    }
+    val songs = state.songs
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -111,7 +110,10 @@ fun ApiSongs(
     ) {
         TextField(
             value = searchQuery.value,
-            onValueChange = { searchQuery.value = it },
+            onValueChange = {
+                searchQuery.value = it
+                onQueryChanged(it)
+            },
             label = { Text("Поиск") },
             modifier = Modifier
                 .fillMaxWidth()
@@ -133,6 +135,9 @@ fun ApiSongs(
                     songN = index,
                     onSongClick = onSongClick
                 )
+            }
+            item {
+                Spacer(modifier = Modifier.size(64.dp))
             }
         }
     }
@@ -200,6 +205,7 @@ fun PreviewApiSongsView() {
         ),
         playerState = PlayerState.Loading,
         onPlayButtonClicked = {},
-        onSongClick = { _, _ -> }
+        onSongClick = { _, _ -> },
+        onQueryChanged = { _ -> }
     )
 }

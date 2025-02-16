@@ -12,4 +12,5 @@ sealed class ApiSongsState {
 
 sealed class ApiSongsEvent {
     object LoadData : ApiSongsEvent()
+    data class Search(val query: String) : ApiSongsEvent()
 }
