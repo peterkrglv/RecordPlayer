@@ -21,12 +21,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
-import com.example.recordplayer.R
+import coil.compose.rememberImagePainter
 import com.example.recordplayer.domain.SongModel
 import com.example.recordplayer.ui.icons.Pause
 import com.example.recordplayer.ui.icons.Play
@@ -86,7 +85,7 @@ fun MainState(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
-            painter = painterResource(id = songs[currentSongN].cover),
+          painter = rememberImagePainter(currentSong.coverPath),
             contentDescription = "Cover",
             modifier = Modifier
                 .fillMaxWidth()
@@ -163,34 +162,6 @@ fun MainState(
     }
 }
 
-@Preview(showSystemUi = true)
-@Composable
-fun PlayerPreview() {
-    val context = LocalContext.current
-    val player = remember { ExoPlayer.Builder(context).build() }
-    val songs = listOf(
-        SongModel(
-            name = "Master Of Puppets",
-            artist = "Metallica",
-            cover = R.drawable.record_player,
-            music = R.raw.never
-        )
-    )
-    val state = PlayerState.Main(
-        player = player,
-        songs = songs,
-        currentSongN = 0,
-        isPlaying = false,
-        currentPosition = 0,
-        sliderPosition = 0f,
-        totalDuration = 0
-    )
-    MainState(state = state,
-        onPlayButtonClicked = {},
-        onPreviousButtonClicked = {},
-        onNextButtonClicked = {}
-    )
-}
 
 fun formatTime(timeMs: Long): String {
     val totalSeconds = timeMs / 1000

@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
-import com.example.recordplayer.domain.getPlayList
+import com.example.recordplayer.domain.getPlayListTest
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,7 +20,7 @@ class PlayerViewModel(
     private val _viewState = MutableStateFlow<PlayerState>(
         PlayerState.Main(
             player = player,
-            songs = getPlayList(),
+            songs = getPlayListTest(),
             currentSongN = 0,
             isPlaying = false,
             currentPosition = 0,
@@ -28,7 +28,8 @@ class PlayerViewModel(
             totalDuration = 0
         )
     )
-    val viewState: StateFlow<PlayerState> = _viewState
+    val viewState: StateFlow<PlayerState>
+        get() = _viewState
 
     init {
         initializePlayer()
