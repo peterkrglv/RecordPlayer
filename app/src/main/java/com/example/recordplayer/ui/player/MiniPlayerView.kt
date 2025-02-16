@@ -14,11 +14,17 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberImagePainter
+import com.example.recordplayer.R
 import com.example.recordplayer.ui.icons.Pause
 import com.example.recordplayer.ui.icons.Play
 
@@ -42,12 +48,18 @@ fun BoxScope.MiniPlayer(
         Row(
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            val placeholderPainter = painterResource(id = R.drawable.record_player)
+            val painter: Painter = remember(song.bitmap) {
+                song.bitmap?.let {
+                    BitmapPainter(it.asImageBitmap())
+                } ?: placeholderPainter
+            }
             Image(
-                painter = rememberImagePainter(song.coverPath),
+                painter = painter,
                 contentDescription = "Cover",
                 modifier = Modifier
                     .size(64.dp)
-                    .padding(32.dp)
+                    .padding(8.dp)
             )
             Column(
                 modifier = Modifier

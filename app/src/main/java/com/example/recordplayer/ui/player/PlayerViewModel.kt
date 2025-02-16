@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
+import com.example.recordplayer.domain.SongModel
 import com.example.recordplayer.domain.getPlayListTest
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,6 +35,7 @@ class PlayerViewModel(
     init {
         initializePlayer()
         observePlayerState()
+        Log.d("Playyy", "PlayerViewModel: ${(_viewState.value as PlayerState.Main).songs.size}")
     }
 
     private fun initializePlayer() {
@@ -81,6 +83,28 @@ class PlayerViewModel(
             is PlayerEvent.SkipNext -> skipNext()
             is PlayerEvent.SkipPrevious -> skipPrevious()
             is PlayerEvent.SeekTo -> seekTo(event.position)
+            is PlayerEvent.changePlaylist -> changePlaylist(event.songs, event.currentSongN)
+        }
+    }
+
+    private fun changePlaylist(songs: List<SongModel>, currentSongN: Int) {
+        viewModelScope.launch {
+            player.clearMediaItems()
+            songs.forEach {
+                player.addMediaItem(it.media)
+            }
+            player.seekTo(currentSongN, 0)
+            player.prepare()
+            player.play()
+            _viewState.value = PlayerState.Main(
+                player = player,
+                songs = songs,
+                isPlaying = true,
+                currentSongN = currentSongN,
+                currentPosition = 0L,
+                sliderPosition = 0f,
+                totalDuration = 0L
+            )
         }
     }
 

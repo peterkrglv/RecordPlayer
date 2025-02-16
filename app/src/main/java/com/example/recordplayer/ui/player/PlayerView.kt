@@ -14,17 +14,25 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.rememberImagePainter
 import com.example.recordplayer.ui.icons.Pause
 import com.example.recordplayer.ui.icons.Play
 import com.example.recordplayer.ui.icons.SkipNext
 import com.example.recordplayer.ui.icons.SkipPrevious
 import org.koin.androidx.compose.koinViewModel
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
+import com.example.recordplayer.R
 
 @Composable
 fun PlayerView(
@@ -80,8 +88,14 @@ fun MainState(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        val placeholderPainter = painterResource(id = R.drawable.record_player)
+        val painter: Painter = remember(currentSong.bitmap) {
+            currentSong.bitmap?.let {
+                BitmapPainter(it.asImageBitmap())
+            } ?: placeholderPainter
+        }
         Image(
-            painter = rememberImagePainter(currentSong.coverPath),
+            painter = painter,
             contentDescription = "Cover",
             modifier = Modifier
                 .fillMaxWidth()

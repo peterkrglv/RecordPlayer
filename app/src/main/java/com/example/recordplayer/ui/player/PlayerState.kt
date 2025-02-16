@@ -22,4 +22,5 @@ sealed class PlayerEvent {
     data object SkipNext: PlayerEvent()
     data object SkipPrevious: PlayerEvent()
     data class SeekTo(val position: Float): PlayerEvent()
+    data class changePlaylist(val songs: List<SongModel>, val currentSongN: Int): PlayerEvent()
 }

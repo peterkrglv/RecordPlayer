@@ -1,5 +1,7 @@
 package com.example.recordplayer.domain
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import androidx.media3.common.MediaItem
 import com.example.recordplayer.data.LocalSong
 
@@ -8,7 +10,8 @@ data class SongModel(
     val artist: String,
     val album: String,
     val media: MediaItem,
-    val coverPath: String?,
+    val cover: ByteArray?,
+    val bitmap: Bitmap?
 ) {
     constructor(localSong: LocalSong): this(
         name = localSong.name,
@@ -18,7 +21,10 @@ data class SongModel(
             .setUri(localSong.path)
             .setMediaId(localSong.path)
             .build(),
-        coverPath = localSong.coverPath
+        cover = localSong.cover,
+        bitmap = localSong.cover?.let {
+            BitmapFactory.decodeByteArray(it, 0, it.size)
+        }
     )
 }
 
@@ -29,35 +35,35 @@ fun getPlayListTest(): List<SongModel> {
             artist = "Rick Astley",
             album = "Whenever You Need Somebody",
             path = "android.resource://com.example.recordplayer/raw/never",
-            coverPath = "android.resource://com.example.recordplayer/drawable/record_player"
+            cover = null
         ),
         LocalSong(
             name = "Мозги & деньги",
             artist = "Комсомольск",
             album = "Комсомольск-1",
             path = "android.resource://com.example.recordplayer/raw/money_and_brains",
-            coverPath = "android.resource://com.example.recordplayer/drawable/record_player"
+            cover = null
         ),
         LocalSong(
             name = "Lose Yourself",
             artist = "Eminem",
             album = "8 Mile",
             path = "android.resource://com.example.recordplayer/raw/never",
-            coverPath = "android.resource://com.example.recordplayer/drawable/record_player"
+            cover = null
         ),
         LocalSong(
             name = "Crazy",
             artist = "Gnarls Barkley",
             album = "St. Elsewhere",
             path = "android.resource://com.example.recordplayer/raw/never",
-            coverPath = "android.resource://com.example.recordplayer/drawable/record_player"
+            cover = null
         ),
         LocalSong(
             name = "Till I Collapse",
             artist = "Eminem",
             album = "The Eminem Show",
             path = "android.resource://com.example.recordplayer/raw/never",
-            coverPath = "android.resource://com.example.recordplayer/drawable/record_player"
+            cover = null
         ),
     )
     return localSongs.map { SongModel(it) }

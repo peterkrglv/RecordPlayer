@@ -1,7 +1,9 @@
 package com.example.recordplayer.ui.local_songs
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,7 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
@@ -26,9 +28,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberImagePainter
+import com.example.recordplayer.R
 import com.example.recordplayer.domain.SongModel
 import com.example.recordplayer.domain.getPlayListTest
 import com.example.recordplayer.ui.player.MiniPlayer
@@ -56,6 +63,9 @@ fun LocalSongsView(
                 playerState = playerViewState.value,
                 onPlayButtonClicked = {
                     playerViewModel.obtainEvent(PlayerEvent.PlayPause)
+                },
+                onSongClick = { songs, currentSongN ->
+                    playerViewModel.obtainEvent(PlayerEvent.changePlaylist(songs, currentSongN))
                 }
             )
     }
@@ -65,10 +75,14 @@ fun LocalSongsView(
 fun MainState(
     state: LocalSongsState.Main,
     playerState: PlayerState,
-    onPlayButtonClicked: () -> Unit = {}
+    onPlayButtonClicked: () -> Unit = {},
+    onSongClick: (songs: List<SongModel>, currentSongN: Int) -> Unit
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
-        LocalSongs(state = state)
+        LocalSongs(
+            state = state,
+            onSongClick = onSongClick
+        )
         if (playerState is PlayerState.Main)
             MiniPlayer(
                 state = playerState,
@@ -79,7 +93,8 @@ fun MainState(
 
 @Composable
 fun LocalSongs(
-    state: LocalSongsState.Main
+    state: LocalSongsState.Main,
+    onSongClick: (songs: List<SongModel>, currentSongN: Int) -> Unit
 ) {
     val searchQuery = remember { mutableStateOf(state.searchQuery) }
     val songs = remember(searchQuery.value) {
@@ -116,8 +131,12 @@ fun LocalSongs(
         LazyColumn(
             modifier = Modifier.fillMaxWidth()
         ) {
-            items(songs) { song ->
-                SongCard(song = song, onSongClick = {})
+            itemsIndexed(songs) { index, song ->
+                SongCard(
+                    songs = songs,
+                    songN = index,
+                    onSongClick = onSongClick
+                )
             }
         }
     }
@@ -126,23 +145,30 @@ fun LocalSongs(
 
 @Composable
 fun SongCard(
-    song: SongModel,
-    onSongClick: () -> Unit
+    songs: List<SongModel>,
+    songN: Int,
+    onSongClick: (songs: List<SongModel>, currentSongN: Int) -> Unit
 ) {
+    val song = songs[songN]
     OutlinedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-
-        ) {
-        Row(
-        ) {
+            .padding(vertical = 8.dp)
+            .clickable { onSongClick(songs, songN) } // Добавляем кликабельность
+    ) {
+        Row {
+            val placeholderPainter = painterResource(id = R.drawable.record_player)
+            val painter: Painter = remember(song.bitmap) {
+                song.bitmap?.let {
+                    BitmapPainter(it.asImageBitmap())
+                } ?: placeholderPainter
+            }
             Image(
-                painter = rememberImagePainter(song.coverPath),
+                painter = painter,
                 contentDescription = "Cover",
                 modifier = Modifier
                     .size(64.dp)
-                    .padding(32.dp)
+                    .padding(8.dp)
             )
             Column(
                 modifier = Modifier
@@ -180,6 +206,7 @@ fun PreviewLocalSongsView() {
             searchQuery = ""
         ),
         playerState = PlayerState.Loading,
-        onPlayButtonClicked = {}
+        onPlayButtonClicked = {},
+        onSongClick = { _, _ -> }
     )
 }
