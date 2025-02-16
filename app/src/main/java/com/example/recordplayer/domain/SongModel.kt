@@ -3,6 +3,7 @@ package com.example.recordplayer.domain
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.media3.common.MediaItem
+import com.example.recordplayer.data.ApiSong
 import com.example.recordplayer.data.LocalSong
 
 data class SongModel(
@@ -10,7 +11,7 @@ data class SongModel(
     val artist: String,
     val album: String,
     val media: MediaItem,
-    val cover: ByteArray?,
+    val coverUrl: String?,
     val bitmap: Bitmap?
 ) {
     constructor(localSong: LocalSong): this(
@@ -21,10 +22,22 @@ data class SongModel(
             .setUri(localSong.path)
             .setMediaId(localSong.path)
             .build(),
-        cover = localSong.cover,
+        coverUrl = null,
         bitmap = localSong.cover?.let {
             BitmapFactory.decodeByteArray(it, 0, it.size)
         }
+    )
+
+    constructor(apiSong: ApiSong): this(
+        name = apiSong.name,
+        artist = apiSong.artist,
+        album = apiSong.album,
+        media = MediaItem.Builder()
+            .setUri(apiSong.media.toString())
+            .setMediaId(apiSong.media.toString())
+            .build(),
+        coverUrl = apiSong.cover.toString(),
+        bitmap = null
     )
 }
 
