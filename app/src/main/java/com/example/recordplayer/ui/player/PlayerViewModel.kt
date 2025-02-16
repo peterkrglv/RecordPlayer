@@ -1,12 +1,12 @@
 package com.example.recordplayer.ui.player
 
-import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
+import com.example.recordplayer.domain.SongModel
 import com.example.recordplayer.domain.getPlayListTest
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,6 +35,7 @@ class PlayerViewModel(
     init {
         initializePlayer()
         observePlayerState()
+        Log.d("Playyy", "PlayerViewModel: ${(_viewState.value as PlayerState.Main).songs.size}")
     }
 
     private fun initializePlayer() {
@@ -68,7 +69,8 @@ class PlayerViewModel(
                 _viewState.value = (_viewState.value as? PlayerState.Main)?.copy(
                     currentPosition = player.currentPosition,
                     isPlaying = player.isPlaying,
-                    sliderPosition = if (player.duration > 0) player.currentPosition.toFloat() / player.duration.toFloat() else 0f
+                    sliderPosition = if (player.duration > 0) player.currentPosition.toFloat() / player.duration.toFloat() else 0f,
+                    currentSongN = player.currentMediaItemIndex
                 ) ?: PlayerState.Loading
             }
         }
@@ -80,7 +82,34 @@ class PlayerViewModel(
             is PlayerEvent.PlayPause -> playPause()
             is PlayerEvent.SkipNext -> skipNext()
             is PlayerEvent.SkipPrevious -> skipPrevious()
+            is PlayerEvent.SeekTo -> seekTo(event.position)
+            is PlayerEvent.changePlaylist -> changePlaylist(event.songs, event.currentSongN)
         }
+    }
+
+    private fun changePlaylist(songs: List<SongModel>, currentSongN: Int) {
+        viewModelScope.launch {
+            player.clearMediaItems()
+            songs.forEach {
+                player.addMediaItem(it.media)
+            }
+            player.seekTo(currentSongN, 0)
+            player.prepare()
+            player.play()
+            _viewState.value = PlayerState.Main(
+                player = player,
+                songs = songs,
+                isPlaying = true,
+                currentSongN = currentSongN,
+                currentPosition = 0L,
+                sliderPosition = 0f,
+                totalDuration = 0L
+            )
+        }
+    }
+
+    private fun seekTo(position: Float) {
+        player.seekTo((player.duration * position).toLong())
     }
 
     private fun skipPrevious() {

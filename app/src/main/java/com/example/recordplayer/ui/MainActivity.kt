@@ -31,15 +31,23 @@ class MainActivity : ComponentActivity() {
                 MainView()
             }
         }
-        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            Manifest.permission.READ_MEDIA_AUDIO
+        requestPermissions()
+    }
+
+    private fun requestPermissions() {
+        val permissions = mutableListOf<String>()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissions.add(Manifest.permission.READ_MEDIA_AUDIO)
+            permissions.add(Manifest.permission.READ_MEDIA_IMAGES)
         } else {
-            Manifest.permission.READ_EXTERNAL_STORAGE
+            permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE)
         }
-        if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissionLauncher.launch(permission)
-        } else {
-            Log.d("permission", "Permission already granted")
+        permissions.forEach { permission ->
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissionLauncher.launch(permission)
+            } else {
+                Log.d("permission", "Permission already granted: $permission")
+            }
         }
     }
 }

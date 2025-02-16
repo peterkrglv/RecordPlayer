@@ -20,6 +20,6 @@ val domainModule = module {
 
 val appModule = module {
     single<ExoPlayer> { ExoPlayer.Builder(get()).build() }
-    viewModel<PlayerViewModel> { PlayerViewModel(get()) }
+    single<PlayerViewModel> { PlayerViewModel(get()) }
     viewModel<LocalSongsViewModel> {LocalSongsViewModel(get())}
 }
