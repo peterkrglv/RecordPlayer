@@ -8,8 +8,8 @@ sealed class PlayerState {
     data class Main(
         val player: ExoPlayer,
         val songs: List<SongModel>,
-        val currentSongN: Int,
         val isPlaying: Boolean,
+        val currentSongN: Int,
         val currentPosition: Long,
         val sliderPosition: Float,
         val totalDuration: Long
@@ -18,4 +18,7 @@ sealed class PlayerState {
 
 sealed class PlayerEvent {
     data object LoadData : PlayerEvent()
+    data object PlayPause: PlayerEvent()
+    data object SkipNext: PlayerEvent()
+    data object SkipPrevious: PlayerEvent()
 }
