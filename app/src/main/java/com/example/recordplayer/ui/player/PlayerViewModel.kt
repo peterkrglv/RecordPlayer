@@ -9,7 +9,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import com.example.recordplayer.domain.SongModel
-import com.example.recordplayer.domain.getPlayListTest
+import com.example.recordplayer.domain.GetLocalSongsUseCase
 import com.example.recordplayer.ui.NotificationService
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,31 +20,21 @@ import android.graphics.Bitmap
 
 class PlayerViewModel(
     private val player: ExoPlayer,
-    application: Application
+    application: Application,
+    private val getLocalSongsUseCase: GetLocalSongsUseCase
 ) : AndroidViewModel(application) {
     private val _viewState = MutableStateFlow<PlayerState>(
-        PlayerState.Main(
-            player = player,
-            songs = getPlayListTest(),
-            currentSongN = 0,
-            isPlaying = false,
-            currentPosition = 0,
-            sliderPosition = 0f,
-            totalDuration = 0
-        )
+        PlayerState.Loading
     )
     val viewState: StateFlow<PlayerState>
         get() = _viewState
 
     init {
-        initializePlayer()
+        loadData()
         observePlayerState()
-        sendNotification(
-            song = (_viewState.value as PlayerState.Main).songs[0]
-        )
     }
 
-    private fun initializePlayer() {
+    private fun initializePlayer(songs: List<SongModel>) {
         player.addListener(object : Player.Listener {
             override fun onPlaybackStateChanged(playbackState: Int) {
                 if (playbackState == Player.STATE_READY) {
@@ -60,7 +50,6 @@ class PlayerViewModel(
                 ) ?: PlayerState.Loading
             }
         })
-        val songs = (_viewState.value as? PlayerState.Main)?.songs ?: return
         songs.forEach {
             player.addMediaItem(it.media)
         }
@@ -148,6 +137,20 @@ class PlayerViewModel(
     }
 
     private fun loadData() {
+        viewModelScope.launch {
+            val songs = getLocalSongsUseCase.execute()
+            _viewState.value = PlayerState.Main(
+                player = player,
+                songs = songs,
+                currentSongN = 0,
+                isPlaying = false,
+                currentPosition = 0,
+                sliderPosition = 0f,
+                totalDuration = 0
+            )
+            initializePlayer(songs)
+            sendNotification(songs[0])
+        }
     }
 
     fun sendNotification(song: SongModel) {

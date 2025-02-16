@@ -114,7 +114,7 @@ fun ApiSongs(
                 searchQuery.value = it
                 onQueryChanged(it)
             },
-            label = { Text("Поиск") },
+            label = { Text("Поиск в интернете") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 16.dp),

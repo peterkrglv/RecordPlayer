@@ -32,6 +32,6 @@ val appModule = module {
     single<ExoPlayer> { ExoPlayer.Builder(get()).build() }
     viewModel<LocalSongsViewModel> { LocalSongsViewModel(get()) }
     viewModel<ApiSongsViewModel> { ApiSongsViewModel(get(), get()) }
-    single<PlayerViewModel> { PlayerViewModel(get(), get()) }
+    single<PlayerViewModel> { PlayerViewModel(get(), get(), get()) }
     single { NotificationService() }
 }

@@ -114,7 +114,7 @@ fun LocalSongs(
         TextField(
             value = searchQuery.value,
             onValueChange = { searchQuery.value = it },
-            label = { Text("Поиск") },
+            label = { Text("Поиск в локальной библиотеке") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 16.dp),

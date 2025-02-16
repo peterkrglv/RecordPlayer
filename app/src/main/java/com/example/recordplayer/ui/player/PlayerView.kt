@@ -1,6 +1,7 @@
 package com.example.recordplayer.ui.player
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,8 +9,10 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -59,7 +62,7 @@ fun PlayerView(
         }
 
         is PlayerState.Loading -> {
-            // Отображение состояния загрузки
+            LoadingState()
         }
     }
 }
@@ -174,6 +177,20 @@ fun MainState(
     }
 }
 
+@Composable
+fun LoadingState() {
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                MaterialTheme.colorScheme.background
+            ),
+    ) {
+        CircularProgressIndicator()
+    }
+}
 
 fun formatTime(timeMs: Long): String {
     val totalSeconds = timeMs / 1000
