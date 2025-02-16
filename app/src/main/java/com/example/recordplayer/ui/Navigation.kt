@@ -1,11 +1,14 @@
 package com.example.recordplayer.ui
 
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -33,7 +36,13 @@ fun BottomNavigationBar(navController: NavHostController) {
         navItems.forEach { item ->
             NavigationBarItem(
                 selected = currentRoute == item.route,
-                icon = { Icon(item.icon, contentDescription = item.route) },
+                icon = {
+                    Icon(
+                        modifier = Modifier.size(32.dp),
+                        imageVector = item.icon,
+                        contentDescription = item.route
+                    )
+                },
                 onClick = {
                     navController.navigate(item.route) {
                         popUpTo(navController.graph.findStartDestination().id) {

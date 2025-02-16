@@ -20,7 +20,6 @@ fun MainView() {
         BottomNavigationBar(navController)
     }) { padding ->
         Column(modifier = Modifier.padding(padding)) {
-
             NavHost(navController = navController, startDestination = NavigationItem.Player.route) {
                 composable(NavigationItem.ApiSongs.route) {
                     ApiSongsView()
@@ -35,4 +34,7 @@ fun MainView() {
         }
     }
 }
+
+
+
 
