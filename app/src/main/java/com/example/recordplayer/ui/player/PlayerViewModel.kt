@@ -1,6 +1,5 @@
 package com.example.recordplayer.ui.player
 
-import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -68,7 +67,8 @@ class PlayerViewModel(
                 _viewState.value = (_viewState.value as? PlayerState.Main)?.copy(
                     currentPosition = player.currentPosition,
                     isPlaying = player.isPlaying,
-                    sliderPosition = if (player.duration > 0) player.currentPosition.toFloat() / player.duration.toFloat() else 0f
+                    sliderPosition = if (player.duration > 0) player.currentPosition.toFloat() / player.duration.toFloat() else 0f,
+                    currentSongN = player.currentMediaItemIndex
                 ) ?: PlayerState.Loading
             }
         }
@@ -80,7 +80,12 @@ class PlayerViewModel(
             is PlayerEvent.PlayPause -> playPause()
             is PlayerEvent.SkipNext -> skipNext()
             is PlayerEvent.SkipPrevious -> skipPrevious()
+            is PlayerEvent.SeekTo -> seekTo(event.position)
         }
+    }
+
+    private fun seekTo(position: Float) {
+        player.seekTo((player.duration * position).toLong())
     }
 
     private fun skipPrevious() {

@@ -1,6 +1,5 @@
 package com.example.recordplayer.ui.player
 
-import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,24 +13,17 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.MediaItem
-import androidx.media3.exoplayer.ExoPlayer
+import androidx.compose.ui.unit.sp
 import coil.compose.rememberImagePainter
-import com.example.recordplayer.domain.SongModel
 import com.example.recordplayer.ui.icons.Pause
 import com.example.recordplayer.ui.icons.Play
 import com.example.recordplayer.ui.icons.SkipNext
 import com.example.recordplayer.ui.icons.SkipPrevious
-import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -51,6 +43,9 @@ fun PlayerView(
                 },
                 onNextButtonClicked = {
                     viewModel.obtainEvent(PlayerEvent.SkipNext)
+                },
+                onSliderPositionChanged = { newPosition ->
+                    viewModel.obtainEvent(PlayerEvent.SeekTo(newPosition))
                 }
             )
         }
@@ -67,6 +62,7 @@ fun MainState(
     onPlayButtonClicked: () -> Unit,
     onPreviousButtonClicked: () -> Unit,
     onNextButtonClicked: () -> Unit,
+    onSliderPositionChanged: (Float) -> Unit
 ) {
     val player = state.player
     val songs = state.songs
@@ -85,7 +81,7 @@ fun MainState(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
-          painter = rememberImagePainter(currentSong.coverPath),
+            painter = rememberImagePainter(currentSong.coverPath),
             contentDescription = "Cover",
             modifier = Modifier
                 .fillMaxWidth()
@@ -93,15 +89,22 @@ fun MainState(
                 .padding(32.dp)
         )
         Text(
-            text = currentSong.name
+            text = currentSong.name,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold
         )
         Text(
             text = currentSong.artist
         )
+        if (currentSong.album.isNotEmpty()) {
+            Text(
+                text = currentSong.album
+            )
+        }
         Slider(
             value = sliderPosition,
             onValueChange = { newPosition ->
-                player.seekTo((newPosition * totalDuration).toLong())
+                onSliderPositionChanged(newPosition)
             },
             valueRange = 0f..1f,
             modifier = Modifier.padding(horizontal = 8.dp)
@@ -117,11 +120,6 @@ fun MainState(
             )
             Text(
                 text = formatTime(totalDuration)
-            )
-        }
-        if (currentSong.album.isNotEmpty()) {
-            Text(
-                text = currentSong.album
             )
         }
         Row(

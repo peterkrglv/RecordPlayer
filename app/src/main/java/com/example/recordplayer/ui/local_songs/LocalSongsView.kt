@@ -3,6 +3,7 @@ package com.example.recordplayer.ui.local_songs
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,15 +31,19 @@ import androidx.compose.ui.unit.dp
 import coil.compose.rememberImagePainter
 import com.example.recordplayer.domain.SongModel
 import com.example.recordplayer.domain.getPlayListTest
+import com.example.recordplayer.ui.player.MiniPlayer
+import com.example.recordplayer.ui.player.PlayerEvent
+import com.example.recordplayer.ui.player.PlayerState
+import com.example.recordplayer.ui.player.PlayerViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun LocalSongsView(
-    viewModel: LocalSongsViewModel = koinViewModel()
+    viewModel: LocalSongsViewModel = koinViewModel(),
+    playerViewModel: PlayerViewModel = koinViewModel()
 ) {
-
     val viewState = viewModel.viewState.collectAsState()
-
+    val playerViewState = playerViewModel.viewState.collectAsState()
     when (val state = viewState.value) {
         is LocalSongsState.Loading -> {
             viewModel.obtainEvent(LocalSongsEvent.LoadData)
@@ -46,12 +51,34 @@ fun LocalSongsView(
         }
 
         is LocalSongsState.Main ->
-            MainState(state)
+            MainState(
+                state = state,
+                playerState = playerViewState.value,
+                onPlayButtonClicked = {
+                    playerViewModel.obtainEvent(PlayerEvent.PlayPause)
+                }
+            )
     }
 }
 
 @Composable
 fun MainState(
+    state: LocalSongsState.Main,
+    playerState: PlayerState,
+    onPlayButtonClicked: () -> Unit = {}
+) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        LocalSongs(state = state)
+        if (playerState is PlayerState.Main)
+            MiniPlayer(
+                state = playerState,
+                onPlayButtonClicked = onPlayButtonClicked
+            )
+    }
+}
+
+@Composable
+fun LocalSongs(
     state: LocalSongsState.Main
 ) {
     val searchQuery = remember { mutableStateOf(state.searchQuery) }
@@ -151,6 +178,8 @@ fun PreviewLocalSongsView() {
         state = LocalSongsState.Main(
             songs = getPlayListTest(),
             searchQuery = ""
-        )
+        ),
+        playerState = PlayerState.Loading,
+        onPlayButtonClicked = {}
     )
 }
