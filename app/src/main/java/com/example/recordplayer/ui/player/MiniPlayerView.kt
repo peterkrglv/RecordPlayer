@@ -54,8 +54,10 @@ fun BoxScope.MiniPlayer(
                     BitmapPainter(it.asImageBitmap())
                 } ?: placeholderPainter
             }
+            val imagePainter = rememberImagePainter(data = song.coverUrl)
+
             Image(
-                painter = painter,
+                painter = if (song.bitmap != null) painter else imagePainter,
                 contentDescription = "Cover",
                 modifier = Modifier
                     .size(64.dp)

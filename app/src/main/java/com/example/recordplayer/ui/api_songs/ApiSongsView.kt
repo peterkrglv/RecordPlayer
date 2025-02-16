@@ -1,6 +1,5 @@
 package com.example.recordplayer.ui.api_songs
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -28,8 +27,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -37,7 +34,6 @@ import androidx.compose.ui.unit.dp
 import coil.compose.rememberImagePainter
 import com.example.recordplayer.R
 import com.example.recordplayer.domain.SongModel
-import com.example.recordplayer.domain.getPlayListTest
 import com.example.recordplayer.ui.player.MiniPlayer
 import com.example.recordplayer.ui.player.PlayerEvent
 import com.example.recordplayer.ui.player.PlayerState
@@ -157,10 +153,8 @@ fun SongCard(
     ) {
         Row {
             val placeholderPainter = painterResource(id = R.drawable.record_player)
-            val painter: Painter = remember(song.bitmap) {
-                song.bitmap?.let {
-                    BitmapPainter(it.asImageBitmap())
-                } ?: placeholderPainter
+            val painter: Painter = rememberImagePainter(data = song.coverUrl) {
+                placeholder(R.drawable.record_player)
             }
             Image(
                 painter = painter,
@@ -201,7 +195,7 @@ fun LoadingState() {
 fun PreviewApiSongsView() {
     MainState(
         state = ApiSongsState.Main(
-            songs = getPlayListTest(),
+            songs = listOf(), // Замените на тестовые данные
             searchQuery = ""
         ),
         playerState = PlayerState.Loading,

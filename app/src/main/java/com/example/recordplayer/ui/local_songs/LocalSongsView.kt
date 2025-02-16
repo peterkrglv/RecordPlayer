@@ -1,6 +1,5 @@
 package com.example.recordplayer.ui.local_songs
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -34,7 +33,6 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.compose.rememberImagePainter
 import com.example.recordplayer.R
 import com.example.recordplayer.domain.SongModel
 import com.example.recordplayer.domain.getPlayListTest
