@@ -2,8 +2,7 @@ package com.example.recordplayer.ui.local_songs
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.recordplayer.domain.GetLocalSongsUseCase
-import com.example.recordplayer.domain.getPlayListTest
+import com.example.recordplayer.domain.LocalSongs.GetLocalSongsUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

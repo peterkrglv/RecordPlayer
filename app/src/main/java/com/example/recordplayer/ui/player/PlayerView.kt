@@ -1,6 +1,5 @@
 package com.example.recordplayer.ui.player
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,22 +19,21 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.recordplayer.ui.api_songs.LoadingState
 import com.example.recordplayer.ui.icons.Pause
 import com.example.recordplayer.ui.icons.Play
+import com.example.recordplayer.ui.icons.RecordPlayer
 import com.example.recordplayer.ui.icons.SkipNext
 import com.example.recordplayer.ui.icons.SkipPrevious
 import org.koin.androidx.compose.koinViewModel
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.res.imageResource
-import androidx.compose.ui.unit.dp
-import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.painter.BitmapPainter
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.res.painterResource
-import com.example.recordplayer.R
 
 @Composable
 fun PlayerView(
@@ -57,7 +55,7 @@ fun PlayerView(
                 },
                 onSliderPositionChanged = { newPosition ->
                     viewModel.obtainEvent(PlayerEvent.SeekTo(newPosition))
-                }
+                },
             )
         }
 
@@ -75,7 +73,6 @@ fun MainState(
     onNextButtonClicked: () -> Unit,
     onSliderPositionChanged: (Float) -> Unit
 ) {
-    val player = state.player
     val songs = state.songs
     val currentPosition = state.currentPosition
     val sliderPosition = state.sliderPosition
@@ -84,6 +81,7 @@ fun MainState(
     val currentSongN = state.currentSongN
     val currentSong = songs[currentSongN]
 
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -91,13 +89,13 @@ fun MainState(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        val placeholderPainter = painterResource(id = R.drawable.record_player)
+        val placeholderPainter = rememberVectorPainter(image = RecordPlayer)
         val painter: Painter = remember(currentSong.bitmap) {
             currentSong.bitmap?.let {
                 BitmapPainter(it.asImageBitmap())
             } ?: placeholderPainter
         }
-        Image(
+        Icon(
             painter = painter,
             contentDescription = "Cover",
             modifier = Modifier
@@ -105,6 +103,14 @@ fun MainState(
                 .aspectRatio(1f)
                 .padding(32.dp)
         )
+//        Image(
+//            painter = painter,
+//            contentDescription = "Cover",
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .aspectRatio(1f)
+//                .padding(32.dp)
+//        )
         Text(
             text = currentSong.name,
             fontSize = 24.sp,
@@ -192,9 +198,16 @@ fun LoadingState() {
     }
 }
 
+
 fun formatTime(timeMs: Long): String {
     val totalSeconds = timeMs / 1000
     val minutes = totalSeconds / 60
     val seconds = totalSeconds % 60
     return String.format("%02d:%02d", minutes, seconds)
+}
+
+@Preview(showSystemUi = true)
+@Composable
+fun PlayerPreview() {
+
 }

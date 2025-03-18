@@ -1,4 +1,4 @@
-package com.example.recordplayer.domain
+package com.example.recordplayer.domain.ApiSongs
 
 import com.example.recordplayer.data.ApiSong
 

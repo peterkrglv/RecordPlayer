@@ -9,7 +9,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import com.example.recordplayer.domain.SongModel
-import com.example.recordplayer.domain.GetLocalSongsUseCase
+import com.example.recordplayer.domain.LocalSongs.GetLocalSongsUseCase
 import com.example.recordplayer.ui.NotificationService
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -80,7 +80,7 @@ class PlayerViewModel(
             is PlayerEvent.SkipNext -> skipNext()
             is PlayerEvent.SkipPrevious -> skipPrevious()
             is PlayerEvent.SeekTo -> seekTo(event.position)
-            is PlayerEvent.changePlaylist -> changePlaylist(event.songs, event.currentSongN)
+            is PlayerEvent.ChangePlaylist -> changePlaylist(event.songs, event.currentSongN)
         }
     }
 

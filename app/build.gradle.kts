@@ -59,15 +59,23 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    implementation("androidx.compose.ui:ui:1.7.8")
-    implementation("io.insert-koin:koin-androidx-compose:4.0.0")
-    implementation("androidx.compose.material3:material3")
+    implementation(libs.ui)
+    implementation(libs.koin.androidx.compose)
+    implementation(libs.material3)
 
-    implementation("androidx.media3:media3-exoplayer:1.5.1")
-    implementation("androidx.media3:media3-ui:1.5.1")
-    implementation("androidx.media3:media3-common:1.5.1")
-    implementation("com.google.accompanist:accompanist-systemuicontroller:0.33.2-alpha")
-    implementation("io.coil-kt:coil-compose:2.1.0")
-    implementation("androidx.navigation:navigation-compose:2.5.3")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.ui)
+    implementation(libs.androidx.media3.common)
+    implementation(libs.accompanist.systemuicontroller)
+    implementation(libs.coil.compose)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.navigation.compose)
+
+    implementation(project(":domain"))
+    implementation(project(":data"))
+
+    //data
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:okhttp:4.9.0")
 }

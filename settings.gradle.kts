@@ -21,3 +21,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "RecordPlayer"
 include(":app")
+include(":domain")
+include(":data")

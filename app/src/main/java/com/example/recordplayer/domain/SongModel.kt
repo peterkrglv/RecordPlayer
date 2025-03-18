@@ -4,7 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.media3.common.MediaItem
 import com.example.recordplayer.data.ApiSong
-import com.example.recordplayer.data.LocalSong
+import com.example.recordplayer.domain.LocalSongs.LocalSong
 
 data class SongModel(
     val name: String,

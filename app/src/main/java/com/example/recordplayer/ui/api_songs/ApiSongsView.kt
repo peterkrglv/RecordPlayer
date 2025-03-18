@@ -15,8 +15,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
@@ -28,13 +32,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberImagePainter
-import com.example.recordplayer.R
 import com.example.recordplayer.domain.SongModel
 import com.example.recordplayer.ui.player.MiniPlayer
 import com.example.recordplayer.ui.player.PlayerEvent
@@ -63,10 +66,13 @@ fun ApiSongsView(
                     playerViewModel.obtainEvent(PlayerEvent.PlayPause)
                 },
                 onSongClick = { songs, currentSongN ->
-                    playerViewModel.obtainEvent(PlayerEvent.changePlaylist(songs, currentSongN))
+                    playerViewModel.obtainEvent(PlayerEvent.ChangePlaylist(songs, currentSongN))
+                },
+                onSearch = { query ->
+                    viewModel.obtainEvent(ApiSongsEvent.Search(query))
                 },
                 onQueryChanged = { query ->
-                    viewModel.obtainEvent(ApiSongsEvent.Search(query))
+                    viewModel.obtainEvent(ApiSongsEvent.QueryChanged(query))
                 }
             )
     }
@@ -78,14 +84,31 @@ fun MainState(
     playerState: PlayerState,
     onPlayButtonClicked: () -> Unit = {},
     onSongClick: (songs: List<SongModel>, currentSongN: Int) -> Unit,
-    onQueryChanged: (String) -> Unit
+    onQueryChanged: (String) -> Unit,
+    onSearch: (String) -> Unit
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
-        ApiSongs(
-            state = state,
-            onSongClick = onSongClick,
-            onQueryChanged = onQueryChanged
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .padding(vertical = 32.dp, horizontal = 16.dp)
+        ) {
+            DropDownSearchBar(
+                searchQuery = state.searchQuery,
+                onSearch = { query -> onSearch(query) },
+                queryHistory = state.searchHistory,
+                onQueryChanged = onQueryChanged
+            )
+            if (state.isLoading) {
+                LoadingState()
+            } else {
+                ApiSongs(
+                    state = state,
+                    onSongClick = onSongClick
+                )
+            }
+        }
         if (playerState is PlayerState.Main)
             MiniPlayer(
                 state = playerState,
@@ -97,48 +120,35 @@ fun MainState(
 @Composable
 fun ApiSongs(
     state: ApiSongsState.Main,
-    onSongClick: (songs: List<SongModel>, currentSongN: Int) -> Unit,
-    onQueryChanged: (String) -> Unit
+    onSongClick: (songs: List<SongModel>, currentSongN: Int) -> Unit
 ) {
-    val searchQuery = remember { mutableStateOf(state.searchQuery) }
     val songs = state.songs
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(vertical = 32.dp, horizontal = 16.dp)
+    LazyColumn(
+        modifier = Modifier.fillMaxWidth()
     ) {
-        TextField(
-            value = searchQuery.value,
-            onValueChange = {
-                searchQuery.value = it
-                onQueryChanged(it)
-            },
-            label = { Text("Поиск в интернете") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 16.dp),
-            maxLines = 1,
-            trailingIcon = {
-                Icon(
-                    imageVector = Icons.Filled.Search,
-                    contentDescription = "Search Icon"
-                )
+        itemsIndexed(songs) { index, song ->
+            SongCard(
+                songs = songs,
+                songN = index,
+                onSongClick = onSongClick
+            )
+        }
+        item {
+            if (songs.isEmpty()) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Ничего не найдено"
+                    )
+
+                }
             }
-        )
-        LazyColumn(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            itemsIndexed(songs) { index, song ->
-                SongCard(
-                    songs = songs,
-                    songN = index,
-                    onSongClick = onSongClick
-                )
-            }
-            item {
-                Spacer(modifier = Modifier.size(64.dp))
-            }
+        }
+        item {
+            Spacer(modifier = Modifier.size(64.dp))
         }
     }
 }
@@ -150,6 +160,11 @@ fun SongCard(
     onSongClick: (songs: List<SongModel>, currentSongN: Int) -> Unit
 ) {
     val song = songs[songN]
+    val imagePainter = rememberImagePainter(data = song.coverUrl)
+    val painter: Painter = song.bitmap?.let {
+        BitmapPainter(it.asImageBitmap())
+    } ?: imagePainter
+
     OutlinedCard(
         modifier = Modifier
             .fillMaxWidth()
@@ -157,10 +172,6 @@ fun SongCard(
             .clickable { onSongClick(songs, songN) }
     ) {
         Row {
-            val placeholderPainter = painterResource(id = R.drawable.record_player)
-            val painter: Painter = rememberImagePainter(data = song.coverUrl) {
-                placeholder(R.drawable.record_player)
-            }
             Image(
                 painter = painter,
                 contentDescription = "Cover",
@@ -175,6 +186,79 @@ fun SongCard(
             ) {
                 Text(text = song.name)
                 Text(text = song.artist)
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DropDownSearchBar(
+    searchQuery: String,
+    onSearch: (String) -> Unit,
+    queryHistory: List<String>,
+    onQueryChanged: (String) -> Unit
+) {
+    val expanded = remember { mutableStateOf(false) }
+    val history = queryHistory
+        .filter { it.contains(searchQuery, ignoreCase = true) && it != searchQuery }
+        .take(6)
+    ExposedDropdownMenuBox(
+        modifier = Modifier.fillMaxWidth(),
+        expanded = expanded.value,
+        onExpandedChange = { expanded.value = !expanded.value }
+    ) {
+        TextField(
+            value = searchQuery,
+            onValueChange = {
+                onQueryChanged(it)
+                expanded.value = true
+            },
+            label = { Text("Поиск в интернете") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 16.dp)
+                .menuAnchor(),
+            maxLines = 1,
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Filled.Search,
+                    contentDescription = "Search Icon",
+                    modifier = Modifier.clickable {
+                        onSearch(searchQuery)
+                        expanded.value = false
+                    }
+                )
+            },
+            trailingIcon = {
+                if (searchQuery != "") {
+                    Icon(
+                        imageVector = Icons.Filled.Clear,
+                        contentDescription = "Search Icon",
+                        modifier = Modifier.clickable {
+                            onQueryChanged("")
+                        }
+                    )
+                }
+            }
+        )
+        if (history.isNotEmpty()) {
+            ExposedDropdownMenu(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surfaceContainerHighest),
+                expanded = expanded.value,
+                onDismissRequest = { expanded.value = false },
+            ) {
+                history.forEach { item ->
+                    DropdownMenuItem(
+                        text = { Text(item) },
+                        onClick = {
+                            onSearch(item)
+                            expanded.value = false
+                        }
+                    )
+                }
             }
         }
     }
@@ -200,12 +284,14 @@ fun LoadingState() {
 fun PreviewApiSongsView() {
     MainState(
         state = ApiSongsState.Main(
-            songs = listOf(), // Замените на тестовые данные
-            searchQuery = ""
+            songs = listOf(),
+            searchQuery = "",
+            exampleSongs = emptyList()
         ),
         playerState = PlayerState.Loading,
         onPlayButtonClicked = {},
         onSongClick = { _, _ -> },
-        onQueryChanged = { _ -> }
+        onQueryChanged = { _ -> },
+        onSearch = { _ -> }
     )
 }

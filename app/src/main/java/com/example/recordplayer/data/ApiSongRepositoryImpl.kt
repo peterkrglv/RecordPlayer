@@ -1,6 +1,6 @@
 package com.example.recordplayer.data
 
-import com.example.recordplayer.domain.ApiSongRepository
+import com.example.recordplayer.domain.ApiSongs.ApiSongRepository
 import org.json.JSONObject
 import java.net.URL
 

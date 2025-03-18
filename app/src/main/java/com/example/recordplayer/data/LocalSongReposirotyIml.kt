@@ -4,7 +4,8 @@ import android.content.ContentResolver
 import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.provider.MediaStore
-import com.example.recordplayer.domain.LocalSongRepository
+import com.example.recordplayer.domain.LocalSongs.LocalSong
+import com.example.recordplayer.domain.LocalSongs.LocalSongRepository
 
 class LocalSongRepositoryImpl(private val context: Context) : LocalSongRepository {
     override fun getLocalSongs(): List<LocalSong> {
@@ -52,10 +53,3 @@ class LocalSongRepositoryImpl(private val context: Context) : LocalSongRepositor
     }
 }
 
-data class LocalSong(
-    val name: String,
-    val artist: String,
-    val album: String,
-    val path: String,
-    val cover: ByteArray?
-)

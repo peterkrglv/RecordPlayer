@@ -1,10 +1,10 @@
-package com.example.recordplayer.domain
+package com.example.recordplayer.domain.LocalSongs
 
-import android.util.Log
+import com.example.recordplayer.domain.SongModel
 
 class GetLocalSongsUseCase(private val localSongRepository: LocalSongRepository) {
     suspend fun execute(): List<SongModel> {
         val localSongs = localSongRepository.getLocalSongs()
-        return localSongs.map{ SongModel(it)}
+        return localSongs.map { SongModel(it) }
     }
 }

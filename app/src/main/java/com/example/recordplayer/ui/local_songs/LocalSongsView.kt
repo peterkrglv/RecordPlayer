@@ -54,7 +54,6 @@ fun LocalSongsView(
             viewModel.obtainEvent(LocalSongsEvent.LoadData)
             LoadingState()
         }
-
         is LocalSongsState.Main ->
             MainState(
                 state = state,
@@ -63,7 +62,7 @@ fun LocalSongsView(
                     playerViewModel.obtainEvent(PlayerEvent.PlayPause)
                 },
                 onSongClick = { songs, currentSongN ->
-                    playerViewModel.obtainEvent(PlayerEvent.changePlaylist(songs, currentSongN))
+                    playerViewModel.obtainEvent(PlayerEvent.ChangePlaylist(songs, currentSongN))
                 }
             )
     }

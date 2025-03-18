@@ -27,9 +27,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            RecordPlayerTheme {
-                MainView()
-            }
+            MainView()
         }
         requestPermissions()
     }
